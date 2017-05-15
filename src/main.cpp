@@ -104,8 +104,6 @@ int main() {
 	Object cubE({ 0.1,0.1,0.1 }, { 0.f,0.f,1.0f }, { 4.5f,0.3f,0.0f }, Object::cube);
 	
 	material.SetMaterial(&generalLight);
-//	material.SetMaterial(&generalLight);
-//	material.SetMaterial(&generalLight);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -122,10 +120,6 @@ int main() {
 		mat4 proj;		mat4 view;		mat4 model;
 		GLint modelLoc, viewLoc, projectionLoc;
 
-		
-		material.SetShininess(&generalLight);
-		material.ActivateTextures();
-		
 		proj = perspective(radians(myCamera.GetFOV()), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 		myCamera.DoMovement(window);
 	
@@ -142,18 +136,17 @@ int main() {
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
 		
-//DURECCIONAL//
+
 		generalLight.USE();
+		material.SetShininess(&generalLight);
+		material.ActivateTextures();
 		view = myCamera.LookAt();
-		viewLoc = glGetUniformLocation(generalLight.Program, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-		projectionLoc = glGetUniformLocation(generalLight.Program, "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-		Light Ldir({0.0,0.0,0.0}, { -0.f, -1.0f, -0.f }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::DIRECTIONAL, 0);
+//DURECCIONAL//
+		Light Ldir({0.0,0.0,0.0}, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
 		Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		
 //PUNTUAL
-		Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::POINT, 0);
+		Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::POINT, 0);
 		Lpoint1.SetAtt(1.0f, 0.09, 0.032);
 		Lpoint1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		Lpoint1.SetPosition({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z });
@@ -166,13 +159,13 @@ int main() {
 //FOCAL
 		Light LFocal1({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z }, { 0.f, -1.f, 0.f, }, { 0.2f, 0.0f, 0.0f }, { 0.5f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Light::SPOT, 0);
 		LFocal1.SetAtt(1.0f, 0.09, 0.032);
-		LFocal1.SetAperture(glm::cos(glm::radians(15.5f)), glm::cos(glm::radians(30.5f)));
+		LFocal1.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
 		LFocal1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		LFocal1.SetPosition({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z });
 
 		Light LFocal2({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z }, { 1.f, 0.0f, 0.f, }, { 0.2f, 0.07f, 0.0f }, { 0.5f, 0.170f, 0.0f }, { 0.9f, 0.30f, 0.0f }, Light::SPOT, 1);
 		LFocal2.SetAtt(1.0f, 0.09, 0.032);
-		LFocal2.SetAperture(glm::cos(glm::radians(15.5f)), glm::cos(glm::radians(30.5f)));
+		LFocal2.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
 		LFocal2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		LFocal2.SetPosition({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z });
 
@@ -200,7 +193,7 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		
 		GLint lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
-		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+		glUniform3f(lightColorLoc, 0.0f, 1.0f, 0.0f);
 
 		viewLoc = glGetUniformLocation(ReceiveShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
@@ -257,23 +250,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		mixValor += 0.02;
 	if (key == GLFW_KEY_2 && mixValor - 0.02 >= 0)
 		mixValor -= 0.02;
-	if (key == GLFW_KEY_KP_4)
+
+	if (key == GLFW_KEY_LEFT)
 		radiansX -= 0.5;
-	if (key == GLFW_KEY_KP_6)
-		radiansX += 0.5;
-	if (key == GLFW_KEY_KP_8)
-		radiansY -= 0.5;
-	if (key == GLFW_KEY_KP_2)
-		radiansY += 0.5;
-	
-	if (key == GLFW_KEY_LEFT )
-		movement.x -= 0.05;
 	if (key == GLFW_KEY_RIGHT)
+		radiansX += 0.5;
+	if (key == GLFW_KEY_UP)
+		radiansY -= 0.5;
+	if (key == GLFW_KEY_DOWN)
+		radiansY += 0.5;
+
+	if (key == GLFW_KEY_KP_1)
+		movement.x -= 0.05;
+	if (key == GLFW_KEY_KP_3)
 		movement.x += 0.05;
-	if (key == GLFW_KEY_UP )
+	if (key == GLFW_KEY_KP_5)
 		movement.y += 0.05;
-	if (key == GLFW_KEY_DOWN )
+	if (key == GLFW_KEY_KP_2)
 		movement.y -= 0.05;
+	if (key == GLFW_KEY_KP_6)
+		movement.z += 0.05;
+	if (key == GLFW_KEY_KP_4)
+		movement.z -= 0.05;
 
 	if (key == GLFW_KEY_5)
 		LightOption = 1;
