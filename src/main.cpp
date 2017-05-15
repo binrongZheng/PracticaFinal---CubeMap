@@ -10,6 +10,7 @@
 #include "material.h"
 #include "Light.h"
 #include "CubeMap.h"
+#include "Model.h"
 //para textura
 #include <SOIL.h>
 //para vector
@@ -81,9 +82,13 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	Shader objShader("./src/coordVertex.vertexshader", "./src/coordFragment.fragmentshader");
 	Shader ReceiveShader("./src/ReceiveVertex.vertexshader", "./src/ReceiveFragment.fragmentshader");
 	Shader generalLight("./src/VertexShaderPhongTexture.vs", "./src/FragmentShaderPhongTexture.fs");
 	Shader CubemapShader("./src/CubemapVertex.vertexshader", "./src/CubemapFragment.fragmentshader");
+
+	Model SpiderModel("./src/spider/spider/spider.obj");
+
 	/*
 	CubeMap skybox("./src/skybox/lagoon_rt.jpg", "./src/skybox/lagoon_lf.jpg", 
 				   "./src/skybox/lagoon_up.jpg", "./src/skybox/lagoon_dn.jpg", 
@@ -225,7 +230,15 @@ int main() {
 		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		cubE.Draw();
-		
+//pintar Model
+		objShader.USE();
+
+		model = translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+		model = scale(model, glm::vec3(0.02f, 0.02f, 0.02f));
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		SpiderModel.Draw(objShader, GL_FILL);
+
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
