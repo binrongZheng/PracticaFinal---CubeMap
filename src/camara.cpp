@@ -20,7 +20,10 @@ void Camera::DoMovement(GLFWwindow * window) {
 		cameraPos -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D))
 		cameraPos += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-	
+	if (glfwGetKey(window, GLFW_KEY_Q))
+		cameraPos -= cameraSpeed * cameraUp;
+	if (glfwGetKey(window, GLFW_KEY_E))
+		cameraPos += cameraSpeed * cameraUp;
 };
 //OK
 void Camera::MouseMove(GLFWwindow* window, double xpos, double ypos) {
