@@ -1,14 +1,23 @@
 ﻿#include "CubeMap.h"
 
-CubeMap::CubeMap(GLchar *RightPath, GLchar*LeftPath, GLchar *TopPath, GLchar*BottomPath, GLchar *BackPath, GLchar*FrontPath)
+CubeMap::CubeMap(GLchar *RightPath1, GLchar*LeftPath1, GLchar *TopPath1, GLchar*BottomPath1, GLchar *BackPath1, GLchar*FrontPath1,
+				 GLchar *RightPath2, GLchar*LeftPath2, GLchar *TopPath2, GLchar*BottomPath2, GLchar *BackPath2, GLchar*FrontPath2)
 {
 	//añadir las texturas
-	faces.push_back(RightPath);
-	faces.push_back(LeftPath);
-	faces.push_back(TopPath);
-	faces.push_back(BottomPath);
-	faces.push_back(BackPath); 
-	faces.push_back(FrontPath);
+	
+	face1.push_back(RightPath1);
+	face1.push_back(LeftPath1);
+	face1.push_back(TopPath1);
+	face1.push_back(BottomPath1);
+	face1.push_back(BackPath1);
+	face1.push_back(FrontPath1);
+
+	face2.push_back(RightPath2);
+	face2.push_back(LeftPath2);
+	face2.push_back(TopPath2);
+	face2.push_back(BottomPath2);
+	face2.push_back(BackPath2);
+	face2.push_back(FrontPath2);
 
 	//VAO,EBO,VBO
 	GLfloat skyboxVertices[] = {
@@ -73,34 +82,37 @@ CubeMap::CubeMap(GLchar *RightPath, GLchar*LeftPath, GLchar *TopPath, GLchar*Bot
 
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
+	cubemapTexture1 = loadCubemap(face1);
+	cubemapTexture2 = loadCubemap(face2);
 }
 
 CubeMap::~CubeMap(){
+	glDeleteTextures(1, &cubemapTexture1);
+	glDeleteTextures(1, &cubemapTexture2);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
-	glDeleteTextures(1, &texture);
 }
 
 //para leer las imatges
-GLuint CubeMap::loadCubemap() {
-	glGenTextures(1, &texture);
+GLuint CubeMap::loadCubemap(vector <const GLchar*> face) {
+//skyboxDay
+	GLuint textureID;
+	glGenTextures(1, &textureID);
 	glActiveTexture(GL_TEXTURE0);
 
 	int width, height;
 	unsigned char* image;
 
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-
-	for (GLuint i = 0; i < faces.size(); i++)
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	for (GLuint i = 0; i < face.size(); i++)
 	{
-		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
+		image = SOIL_load_image(face[i], &width, &height, 0, SOIL_LOAD_RGB);
 		glTexImage2D(
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
 			GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
 		);
 	}
-
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -108,19 +120,18 @@ GLuint CubeMap::loadCubemap() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-	return texture;
-}
-//añadir textras
-void CubeMap::pushTexture() {
-	cubemapTexture = loadCubemap();
+	return textureID;
 }
 
 //para pintar skybox
 void CubeMap::draw(Shader *shad) {
 	glBindVertexArray(VAO);
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(shad->Program, "skybox"), 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	glUniform1i(glGetUniformLocation(shad->Program, "day"), 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture1);
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(shad->Program, "night"), 1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture2);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }

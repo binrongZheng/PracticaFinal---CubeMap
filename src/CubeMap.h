@@ -13,16 +13,16 @@ using namespace glm;
 class CubeMap
 {
 public:
-	CubeMap(GLchar *RightPath, GLchar*LeftPath, GLchar *TopPath, GLchar*BottomPath, GLchar *BackPath, GLchar*FrontPath);
+	CubeMap(GLchar *RightPath1, GLchar*LeftPath1, GLchar *TopPath1, GLchar*BottomPath1, GLchar *BackPath1, GLchar*FrontPath1,
+		    GLchar *RightPath2, GLchar*LeftPath2, GLchar *TopPath2, GLchar*BottomPath2, GLchar *BackPath2, GLchar*FrontPath2);
 	~CubeMap();
-	GLuint loadCubemap();
+	GLuint loadCubemap(vector <const GLchar*> face);
 	void draw(Shader *shad);
-	void pushTexture();
 
 private:
-	vector <const GLchar*> faces;
-	GLuint texture;
+	vector <const GLchar*> face1,face2;
+	GLuint textureDay,textureNight;
 	GLuint VBO, VAO, EBO;
-	GLuint cubemapTexture;
+	GLuint cubemapTexture1, cubemapTexture2;
 };
 

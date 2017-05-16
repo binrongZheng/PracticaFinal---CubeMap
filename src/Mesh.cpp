@@ -52,6 +52,8 @@ void Mesh::Draw(Shader MeshShader, GLint DrawMode) {
 		glUniform1f(glGetUniformLocation(MeshShader.Program, ("material." + name + number).c_str()), i);		
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
+/////////////////SHINIENES//////////////
+	glUniform1f(glGetUniformLocation(MeshShader.Program, "material.shininess"), 16.0f);
 	
 	// Draw mesh
 	glBindVertexArray(VAO);

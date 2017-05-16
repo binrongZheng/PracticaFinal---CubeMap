@@ -2,10 +2,12 @@
 in vec3 TexCoords;
 out vec4 color;
 
-uniform samplerCube skybox;
-
+uniform samplerCube day;
+uniform samplerCube night;
+uniform float Valor;
 
 void main()
 {
-    color = texture(skybox, TexCoords);
+    color = mix(texture(day, TexCoords),texture(night, TexCoords),Valor);
+//	color=texture(day,TexCoords); 
 }
