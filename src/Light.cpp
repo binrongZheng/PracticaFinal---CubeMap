@@ -34,6 +34,7 @@ void Light::SetAperture(float min, float max) {
 }
 void Light::setIntensity(Shader *shad, GLfloat intens) {
 	glUniform1f(glGetUniformLocation(shad->Program, "dlight.bright"), intens);
+
 }
 void Light::SetLight(Shader *shad, vec3 CamPos) {
 	std::string variable;

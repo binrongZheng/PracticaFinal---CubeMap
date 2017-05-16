@@ -125,7 +125,29 @@ int main() {
 
 		proj = perspective(radians(myCamera.GetFOV()), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 		myCamera.DoMovement(window);
-//pintar Model
+
+//SKYBOX//
+		glDepthMask(GL_FALSE);
+		CubemapShader.USE();
+		
+		mixValor = (sin(glfwGetTime()/2) / 2) + 0.5;
+
+		//mixValor = mod(mixValor,1.0f);
+		// ... Set view and projection matrix
+		//view = mat4(mat3(myCamera.LookAt()));
+		view = mat4(mat3 (myCamera.LookAt()));
+		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+		projectionLoc = glGetUniformLocation(CubemapShader.Program, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+		GLfloat variableShader = glGetUniformLocation(CubemapShader.Program, "Valor");
+		glUniform1f(variableShader, mixValor);
+		//pintar skybox
+		skybox.draw(&CubemapShader);
+		glDepthMask(GL_TRUE);
+		
+		
+		//pintar Model
 		objShader.USE();
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
@@ -138,30 +160,14 @@ int main() {
 
 		SpiderModel.Draw(objShader, GL_FILL);
 
-//SKYBOX//
-		glDepthMask(GL_FALSE);
-		CubemapShader.USE();
-		
-		mixValor = (sin(glfwGetTime()/2) / 2) + 0.5;
 
-		//mixValor = mod(mixValor,1.0f);
-		// ... Set view and projection matrix
-		view = mat4(mat3(myCamera.LookAt()));
-		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-		projectionLoc = glGetUniformLocation(CubemapShader.Program, "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-		GLfloat variableShader = glGetUniformLocation(CubemapShader.Program, "Valor");
-		glUniform1f(variableShader, mixValor);
-		//pintar skybox
-		skybox.draw(&CubemapShader);
-		glDepthMask(GL_TRUE);
-		
+
 
 		generalLight.USE();
 		material.SetShininess(&generalLight);
 		material.ActivateTextures();
 		view = myCamera.LookAt();
+
 //DURECCIONAL//
 		Light Ldir({0.0,0.0,0.0}, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
 		Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
