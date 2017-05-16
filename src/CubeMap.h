@@ -22,7 +22,6 @@ public:
 private:
 	vector <const GLchar*> face1,face2;
 	GLuint textureDay,textureNight;
-	GLuint VBO, VAO, EBO;
-	GLuint cubemapTexture1, cubemapTexture2;
+	GLuint VBO, VAO;
 };
 

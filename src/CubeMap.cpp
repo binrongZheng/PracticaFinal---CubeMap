@@ -82,16 +82,15 @@ CubeMap::CubeMap(GLchar *RightPath1, GLchar*LeftPath1, GLchar *TopPath1, GLchar*
 
 	//liberar el buffer de vertices
 	glBindVertexArray(0);
-	cubemapTexture1 = loadCubemap(face1);
-	cubemapTexture2 = loadCubemap(face2);
+	textureDay = loadCubemap(face1);
+	textureNight = loadCubemap(face2);
 }
 
 CubeMap::~CubeMap(){
-	glDeleteTextures(1, &cubemapTexture1);
-	glDeleteTextures(1, &cubemapTexture2);
+	glDeleteTextures(1, &textureDay);
+	glDeleteTextures(1, &textureNight);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
 }
 
 //para leer las imatges
@@ -128,10 +127,10 @@ void CubeMap::draw(Shader *shad) {
 	glBindVertexArray(VAO);
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(shad->Program, "day"), 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureDay);
 	glActiveTexture(GL_TEXTURE1);
 	glUniform1i(glGetUniformLocation(shad->Program, "night"), 1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureNight);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }

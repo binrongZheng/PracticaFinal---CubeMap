@@ -23,6 +23,7 @@ struct DLight {
 	vec3 Ldiffuse;
 	vec3 Lspecular;	
 	vec3 Ldirection;
+	float bright;
 };
 
 struct SLight {
@@ -54,16 +55,26 @@ vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection);
 vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection);
 vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection);
 
+uniform samplerCube day;
+uniform samplerCube night;
+
 void main(){
+	vec4 TextureColor;
 	vec3 viewDir = normalize(viewPos - FragPos);
-	color += vec4(DirectionalLight(dlight,Normal,viewDir),1);
+	TextureColor += vec4(DirectionalLight(dlight,Normal,viewDir),1);
 	for (int i=0;i<NUM_MAX_PLIGHTS;i++){
-		color += vec4(PointLight(plight[i],Normal,viewDir),1);
+		TextureColor += vec4(PointLight(plight[i],Normal,viewDir),1);
 	}
 	for (int i=0;i<NUM_MAX_SLIGHTS;i++){
-		color += vec4(SpotLight(slight[i],Normal,viewDir),1);
+		TextureColor += vec4(SpotLight(slight[i],Normal,viewDir),1);
 	}
-	
+	color=TextureColor;
+/*	vec3 I=normalize(Position-viewPos);
+	vec3 R=reflect(I,normalize(Normal));
+	//CAMBIAR TEXTURAS DE SKYBOX QUE REFLEJA
+	vec4 skyMix = mix(texture(day,R),texture(night,R),Valor);
+	//CAMBIAR TEXTURE DE SKYBOX Y CUBE TEXTURA
+	vec4 reflecrMix =  */
 } 
 
 vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
@@ -82,7 +93,7 @@ vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
     vec3 specular = light.Lspecular * spec * vec3(texture(material.specular, TexCoords));  
     
 	// Finally    
-    vec3 colorD = (ambient + diffuse + specular);
+    vec3 colorD = (2-light.bright)*(ambient + diffuse + specular);
 	return colorD;
 }
 

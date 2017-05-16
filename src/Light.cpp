@@ -32,7 +32,9 @@ void Light::SetAperture(float min, float max) {
 	MinAperture = min;
 	MaxAperture = max;
 }
-
+void Light::setIntensity(Shader *shad, GLfloat intens) {
+	glUniform1f(glGetUniformLocation(shad->Program, "dlight.bright"), intens);
+}
 void Light::SetLight(Shader *shad, vec3 CamPos) {
 	std::string variable;
 	glUniform3f(glGetUniformLocation(shad->Program, "viewPos"), CamPos.x, CamPos.y, CamPos.z);
@@ -42,6 +44,7 @@ void Light::SetLight(Shader *shad, vec3 CamPos) {
 		glUniform3f(glGetUniformLocation(shad->Program, "dlight.Lambient"), Lambient.x, Lambient.y, Lambient.z);
 		glUniform3f(glGetUniformLocation(shad->Program, "dlight.Ldiffuse"), Ldiffuse.x, Ldiffuse.y, Ldiffuse.z);
 		glUniform3f(glGetUniformLocation(shad->Program, "dlight.Lspecular"), Lspecular.x, Lspecular.y, Lspecular.z);
+		
 		break;
 	case POINT:		
 		variable = "plight[" + std::to_string(lightNumber) + "]";	

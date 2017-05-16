@@ -20,7 +20,7 @@
 //midmaping
 using namespace glm;
 using namespace std;
-const GLint WIDTH = 800, HEIGHT = 800;
+const GLint WIDTH = 1000, HEIGHT = 1000;
 bool WIREFRAME = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
@@ -90,17 +90,13 @@ int main() {
 	Model SpiderModel("./src/spider/spider/spider.obj");
 
 	
-	CubeMap skybox("./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
-				   "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
-				   "./src/skyboxes/day/back.jpg", "./src/skyboxes/day/front.jpg",
-				   "./src/skyboxes/night/distant_sunset_rt.jpg", "./src/skyboxes/night/distant_sunset_lf.jpg",
-				   "./src/skyboxes/night/distant_sunset_up.jpg", "./src/skyboxes/night/distant_sunset_dn.jpg",
-				   "./src/skyboxes/night/distant_sunset_bk.jpg", "./src/skyboxes/night/distant_sunset_ft.jpg");
-	/*
-	CubeMap skybox("./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
-		"./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
-		"./src/skyboxes/day/back.jpg", "./src/skyboxes/day/front.jpg");
-		*/
+	CubeMap skybox( "./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
+				    "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
+				    "./src/skyboxes/day/back.jpg", "./src/skyboxes/day/front.jpg",
+		"./src/skyboxes/night/right.jpg", "./src/skyboxes/night/left.jpg",
+		"./src/skyboxes/night/top.jpg", "./src/skyboxes/night/bottom.jpg",
+		"./src/skyboxes/night/back.jpg", "./src/skyboxes/night/front.jpg");
+
 	Material material("./src/difuso.png", "./src/especular.png", 32.0);
 	
 	Object cubA({ 0.3f,0.3f,0.3f }, { 0.f,0.f,0.0f }, { 0.f,-2.f,0.0f }, Object::cube);
@@ -119,6 +115,7 @@ int main() {
 		//Establecer el color de fondo
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//Framebuffer
 
 		//establecer el shader
 		
@@ -145,6 +142,9 @@ int main() {
 		glDepthMask(GL_FALSE);
 		CubemapShader.USE();
 		
+		mixValor = (sin(glfwGetTime()/2) / 2) + 0.5;
+
+		//mixValor = mod(mixValor,1.0f);
 		// ... Set view and projection matrix
 		view = mat4(mat3(myCamera.LookAt()));
 		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
@@ -165,7 +165,7 @@ int main() {
 //DURECCIONAL//
 		Light Ldir({0.0,0.0,0.0}, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
 		Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-		
+		Ldir.setIntensity(&generalLight, mixValor*2);
 //PUNTUAL
 		Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::POINT, 0);
 		Lpoint1.SetAtt(1.0f, 0.09, 0.032);

@@ -19,6 +19,7 @@ public:
 	void SetAtt(float constant, float lineal, float quadratic);
 	void SetLight(Shader *shad, vec3 CamPos);
 	void Rotate(vec3 rotation);
+	void setIntensity(Shader *shad, GLfloat intens);
 	void SetDirection(vec3 dir);
 	void SetAperture(float min, float max);
 	void SetPosition(vec3 pos);
@@ -31,6 +32,7 @@ private:
 	vec3 Ldiffuse;
 	vec3 Lspecular;
 	LType LightType;
+	
 	float MinAperture;
 	float MaxAperture;
 	float c1, c2, c3;
