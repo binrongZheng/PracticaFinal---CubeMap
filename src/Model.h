@@ -11,6 +11,7 @@ public:
 	Model();
 	Model(GLchar*);
 	void Draw(Shader, GLint);
+
 private:
 	vector<Mesh> meshes;
 	string directory;

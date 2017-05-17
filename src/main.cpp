@@ -25,6 +25,7 @@ bool WIREFRAME = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
 vec3 movement;
+vec3 BoatPos = { 0.0f, -1.5f, 3.75f };
 GLfloat radiansX,radiansY;
 GLfloat mixValor=0;
 GLfloat radX = 0;
@@ -87,8 +88,8 @@ int main() {
 	Shader generalLight("./src/VertexShaderPhongTexture.vs", "./src/FragmentShaderPhongTexture.fs");
 	Shader CubemapShader("./src/CubemapVertex.vertexshader", "./src/CubemapFragment.fragmentshader");
 
-	Model SpiderModel("./src/spider/spider/spider.obj");
-
+	Model BoatModel("./src/boat/boat.obj");
+	
 	
 	CubeMap skybox( "./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
 				    "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
@@ -105,6 +106,13 @@ int main() {
 	Object cubD({ 0.1,0.1,0.1 }, { 0.f,1.f,0.0f }, { 3.f,0.3f,0.0f }, Object::cube);
 	Object cubE({ 0.1,0.1,0.1 }, { 0.f,0.f,1.0f }, { 4.5f,0.3f,0.0f }, Object::cube);
 	
+	Light Ldir({ 0.0,0.0,0.0 }, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
+	Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::POINT, 0);
+	Light Lpoint2({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.0f, 0.0f, 0.2f }, { 0.f, 0.f, 0.5f }, { 0.0f, 0.0f, 1.0f }, Light::POINT, 1);
+	Light LFocal1({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z }, { 0.f, -1.f, 0.f, }, { 0.2f, 0.0f, 0.0f }, { 0.5f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Light::SPOT, 0);
+	Light LFocal2({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z }, { 1.f, 0.0f, 0.f, }, { 0.2f, 0.07f, 0.0f }, { 0.5f, 0.170f, 0.0f }, { 0.9f, 0.30f, 0.0f }, Light::SPOT, 1);
+
+
 	material.SetMaterial(&generalLight);
 	
 	while (!glfwWindowShouldClose(window))
@@ -145,52 +153,43 @@ int main() {
 		//pintar skybox
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
-		
-		
-		//pintar Model
+			
+//PINTAR BARCO//
 		objShader.USE();
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-		model = translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-		model = scale(model, glm::vec3(0.02f, 0.02f, 0.02f));
+
+		model = translate(model, BoatPos);
+		model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
 		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-		SpiderModel.Draw(objShader, GL_FILL);
-
-
-
-
+		
+		BoatModel.Draw(objShader, GL_FILL);
+		
 		generalLight.USE();
 		material.SetShininess(&generalLight);
 		material.ActivateTextures();
 		view = myCamera.LookAt();
 
 //DURECCIONAL//
-		Light Ldir({0.0,0.0,0.0}, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
 		Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		Ldir.setIntensity(&generalLight, mixValor*2);
-//PUNTUAL
-		Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::POINT, 0);
+//PUNTUAL//
 		Lpoint1.SetAtt(1.0f, 0.09, 0.032);
 		Lpoint1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		Lpoint1.SetPosition({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z });
 
-		Light Lpoint2({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.0f, 0.0f, 0.2f }, { 0.f, 0.f, 0.5f }, { 0.0f, 0.0f, 1.0f }, Light::POINT, 1);
 		Lpoint2.SetAtt(1.0f, 0.09, 0.032);
 		Lpoint2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		Lpoint2.SetPosition({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z });
-
-//FOCAL
-		Light LFocal1({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z }, { 0.f, -1.f, 0.f, }, { 0.2f, 0.0f, 0.0f }, { 0.5f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Light::SPOT, 0);
+//FOCAL//
 		LFocal1.SetAtt(1.0f, 0.09, 0.032);
 		LFocal1.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
 		LFocal1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		LFocal1.SetPosition({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z });
 
-		Light LFocal2({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z }, { 1.f, 0.0f, 0.f, }, { 0.2f, 0.07f, 0.0f }, { 0.5f, 0.170f, 0.0f }, { 0.9f, 0.30f, 0.0f }, Light::SPOT, 1);
 		LFocal2.SetAtt(1.0f, 0.09, 0.032);
 		LFocal2.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
 		LFocal2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
@@ -273,34 +272,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key == GLFW_KEY_W && action == GLFW_PRESS)
 		WIREFRAME = !WIREFRAME;
-
+	//canviar texturas
 	if (key == GLFW_KEY_KP_ADD && mixValor + 0.02 <= 1)
 		mixValor += 0.02;
 	if (key == GLFW_KEY_KP_SUBTRACT && mixValor - 0.02 >= 0)
 		mixValor -= 0.02;
-
-	if (key == GLFW_KEY_LEFT)
-		radiansX -= 0.5;
-	if (key == GLFW_KEY_RIGHT)
-		radiansX += 0.5;
-	if (key == GLFW_KEY_UP)
-		radiansY -= 0.5;
-	if (key == GLFW_KEY_DOWN)
-		radiansY += 0.5;
-
-	if (key == GLFW_KEY_KP_1)
-		movement.x -= 0.05;
-	if (key == GLFW_KEY_KP_3)
-		movement.x += 0.05;
-	if (key == GLFW_KEY_KP_5)
-		movement.y += 0.05;
-	if (key == GLFW_KEY_KP_2)
-		movement.y -= 0.05;
-	if (key == GLFW_KEY_KP_6)
-		movement.z += 0.05;
-	if (key == GLFW_KEY_KP_4)
-		movement.z -= 0.05;
-
+	//rotar cubo
+	if (key == GLFW_KEY_LEFT)		radiansX -= 0.5;
+	if (key == GLFW_KEY_RIGHT)		radiansX += 0.5;
+	if (key == GLFW_KEY_UP)			radiansY -= 0.5;
+	if (key == GLFW_KEY_DOWN)		radiansY += 0.5;
+	//mover cubo
+	if (key == GLFW_KEY_KP_1)		movement.x -= 0.05;
+	if (key == GLFW_KEY_KP_3)		movement.x += 0.05;
+	if (key == GLFW_KEY_KP_5)		movement.y += 0.05;
+	if (key == GLFW_KEY_KP_2)		movement.y -= 0.05;
+	if (key == GLFW_KEY_KP_6)		movement.z += 0.05;
+	if (key == GLFW_KEY_KP_4)		movement.z -= 0.05;
+	//mover barco
+	if (key == GLFW_KEY_I) 		BoatPos.z -= 0.05;	
+	if (key == GLFW_KEY_K) 		BoatPos.z += 0.05;	
+	if (key == GLFW_KEY_J) 		BoatPos.x -= 0.05;	
+	if (key == GLFW_KEY_L) 		BoatPos.x += 0.05;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
