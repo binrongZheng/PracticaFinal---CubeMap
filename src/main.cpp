@@ -6,7 +6,8 @@
 #include <iostream>
 #include "myShader.h"
 #include "camara.h"
-#include "object.h" 
+#include "object.h"
+#include "ReflectObject.h"
 #include "material.h"
 #include "Light.h"
 #include "CubeMap.h"
@@ -25,7 +26,7 @@ bool WIREFRAME = false;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
 vec3 movement;
-vec3 BoatPos = { 0.0f, -1.5f, 3.75f };
+vec3 BoatPos = { 0.0f, -10.0f, -50.f };
 GLfloat radiansX,radiansY;
 GLfloat mixValor=0;
 GLfloat radX = 0;
@@ -87,25 +88,30 @@ int main() {
 	Shader ReceiveShader("./src/ReceiveVertex.vertexshader", "./src/ReceiveFragment.fragmentshader");
 	Shader generalLight("./src/VertexShaderPhongTexture.vs", "./src/FragmentShaderPhongTexture.fs");
 	Shader CubemapShader("./src/CubemapVertex.vertexshader", "./src/CubemapFragment.fragmentshader");
-
-	Model BoatModel("./src/boat/boat.obj");
+	Shader ReflectShader("./src/ReflectVertex.vertexshader", "./src/ReflectFragment.fragmentshader");
 	
+	Model BoatModel("./src/boat/boat.obj");
 	
 	CubeMap skybox( "./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
 				    "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
 				    "./src/skyboxes/day/back.jpg", "./src/skyboxes/day/front.jpg",
-		"./src/skyboxes/night/right.jpg", "./src/skyboxes/night/left.jpg",
-		"./src/skyboxes/night/top.jpg", "./src/skyboxes/night/bottom.jpg",
-		"./src/skyboxes/night/back.jpg", "./src/skyboxes/night/front.jpg");
+					"./src/skyboxes/night/right.jpg", "./src/skyboxes/night/left.jpg",
+					"./src/skyboxes/night/top.jpg", "./src/skyboxes/night/bottom.jpg",
+					"./src/skyboxes/night/back.jpg", "./src/skyboxes/night/front.jpg");
 
 	Material material("./src/difuso.png", "./src/especular.png", 32.0);
 	
 	Object cubA({ 0.3f,0.3f,0.3f }, { 0.f,0.f,0.0f }, { 0.f,-2.f,0.0f }, Object::cube);
-	Object cubB({ 0.1,0.1,0.1 }, { 0.f,1.f,0.0f }, { 0.f,0.3f,0.0f }, Object::cube);
-	Object cubC({ 0.1,0.1,0.1 }, { 1.f,0.f,0.0f }, { 1.5f,0.3f,0.0f }, Object::cube);
-	Object cubD({ 0.1,0.1,0.1 }, { 0.f,1.f,0.0f }, { 3.f,0.3f,0.0f }, Object::cube);
-	Object cubE({ 0.1,0.1,0.1 }, { 0.f,0.f,1.0f }, { 4.5f,0.3f,0.0f }, Object::cube);
+	Object cubB({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 0.f,0.3f,0.0f }, Object::cube);
+	Object cubC({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 1.5f,0.3f,0.0f }, Object::cube);
+	Object cubD({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 3.f,0.3f,0.0f }, Object::cube);
+	Object cubE({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 4.5f,0.3f,0.0f }, Object::cube);
 	
+	GLuint Day = skybox.loadCubemap(skybox.face1);
+	GLuint Night = skybox.loadCubemap(skybox.face2);
+
+	ReflectObject reflectCub({ 0.3f,0.3f,0.3f }, { 0.f,0.f,0.0f }, {3.f,-2.f,0.0f }, ReflectObject::cube,Day, Night);
+
 	Light Ldir({ 0.0,0.0,0.0 }, { -0.f, -1.0f, -0.f }, { 0.2f, 0.2f, 0.2f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f }, Light::DIRECTIONAL, 0);
 	Light Lpoint1({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.f, 0.2f, 0.f }, { 0.f, 0.5f, 0.f }, { 0.0f, 1.0f, 0.0f }, Light::POINT, 0);
 	Light Lpoint2({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z }, { 0.f, 0.f, 0.f, }, { 0.0f, 0.0f, 0.2f }, { 0.f, 0.f, 0.5f }, { 0.0f, 0.0f, 1.0f }, Light::POINT, 1);
@@ -114,7 +120,7 @@ int main() {
 
 
 	material.SetMaterial(&generalLight);
-	
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
@@ -140,9 +146,6 @@ int main() {
 		
 		mixValor = (sin(glfwGetTime()/2) / 2) + 0.5;
 
-		//mixValor = mod(mixValor,1.0f);
-		// ... Set view and projection matrix
-		//view = mat4(mat3(myCamera.LookAt()));
 		view = mat4(mat3 (myCamera.LookAt()));
 		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
@@ -162,18 +165,41 @@ int main() {
 		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 
-		model = translate(model, BoatPos);
 		model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+		model = translate(model, BoatPos);
 		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		
 		BoatModel.Draw(objShader, GL_FILL);
 		
+//REFLECT
+	ReflectShader.USE();
+
+	view = myCamera.LookAt();
+	
+	model = glm::translate(model, reflectCub.GetPosition());
+	model = reflectCub.GetModelMatrix();
+	reflectCub.Rotate(radiansX, radiansY);
+	reflectCub.Move(movement);
+
+	modelLoc = glGetUniformLocation(ReflectShader.Program, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+	viewLoc = glGetUniformLocation(ReflectShader.Program, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+	projectionLoc = glGetUniformLocation(ReflectShader.Program, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+	glUniform3f(glGetUniformLocation(ReflectShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
+	variableShader = glGetUniformLocation(ReflectShader.Program, "Valor");
+	glUniform1f(variableShader, mixValor);
+
+	//pintar el VAO
+	reflectCub.Draw(&ReflectShader);
+
+//DIRECCIONAL//
 		generalLight.USE();
 		material.SetShininess(&generalLight);
 		material.ActivateTextures();
 		view = myCamera.LookAt();
 
-//DURECCIONAL//
 		Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		Ldir.setIntensity(&generalLight, mixValor*2);
 //PUNTUAL//
@@ -195,10 +221,11 @@ int main() {
 		LFocal2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
 		LFocal2.SetPosition({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z });
 
-		cubA.Rotate(radiansX, radiansY);
-		cubA.Move(movement);
 		model = glm::translate(model, cubA.GetPosition());
 		model = cubA.GetModelMatrix();
+
+		cubA.Rotate(radiansX, radiansY);
+		cubA.Move(movement);
 
 		modelLoc = glGetUniformLocation(generalLight.Program, "model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
@@ -209,6 +236,7 @@ int main() {
 
 		//pintar el VAO
 		cubA.Draw();
+
 ////////////////////////////////////////////////LightsCub///////////////////////////////////////////////////////
 		ReceiveShader.USE();
 
@@ -228,6 +256,7 @@ int main() {
 
 		//pintar el VAO
 		cubB.Draw();
+		
 		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
 		glUniform3f(lightColorLoc, 1.0f, 0.0f, 0.0f);
 		model = glm::translate(model, cubC.GetPosition());
@@ -236,6 +265,7 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 
 		cubC.Draw();
+		
 		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
 		glUniform3f(lightColorLoc, 0.0f, 0.0f, 1.0f);
 		model = glm::translate(model, cubD.GetPosition());
@@ -244,6 +274,7 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 
 		cubD.Draw();
+		
 		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
 		glUniform3f(lightColorLoc, 0.90f, 0.30f, 0.0f);
 		model = glm::translate(model, cubE.GetPosition());
@@ -260,6 +291,9 @@ int main() {
 	cubB.Delete();
 	cubC.Delete();
 	cubD.Delete();
+	cubE.Delete();
+	
+	reflectCub.Delete();
 
 	material.~Material();
 	skybox.~CubeMap();
@@ -270,8 +304,7 @@ int main() {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_W && action == GLFW_PRESS)
-		WIREFRAME = !WIREFRAME;
+	
 	//canviar texturas
 	if (key == GLFW_KEY_KP_ADD && mixValor + 0.02 <= 1)
 		mixValor += 0.02;

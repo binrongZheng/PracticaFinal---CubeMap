@@ -28,6 +28,7 @@
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\myShader.cpp" />
     <ClCompile Include="src\Object.cpp" />
+    <ClCompile Include="src\ReflectObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camara.h" />
@@ -38,6 +39,7 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\myShader.h" />
     <ClInclude Include="src\Object.h" />
+    <ClInclude Include="src\ReflectObject.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FC640D2-EFA2-403C-A406-DF29A85CFD5D}</ProjectGuid>

@@ -55,9 +55,6 @@ vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection);
 vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection);
 vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection);
 
-uniform samplerCube day;
-uniform samplerCube night;
-
 void main(){
 	vec4 TextureColor;
 	vec3 viewDir = normalize(viewPos - FragPos);
@@ -69,12 +66,6 @@ void main(){
 		TextureColor += vec4(SpotLight(slight[i],Normal,viewDir),1);
 	}
 	color=TextureColor;
-/*	vec3 I=normalize(Position-viewPos);
-	vec3 R=reflect(I,normalize(Normal));
-	//CAMBIAR TEXTURAS DE SKYBOX QUE REFLEJA
-	vec4 skyMix = mix(texture(day,R),texture(night,R),Valor);
-	//CAMBIAR TEXTURE DE SKYBOX Y CUBE TEXTURA
-	vec4 reflecrMix =  */
 } 
 
 vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
@@ -98,11 +89,11 @@ vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
 }
 
 vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection){
- // Ambient
+	// Ambient
 	vec3 ambient = light.Lambient* vec3(texture(material.diffuse, TexCoords));
    	vec3 lightDir = normalize(light.lightPos-FragPos);
  
- // Diffuse 
+	// Diffuse 
 	vec3 norm=normalize(Normal);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.Ldiffuse * diff * vec3(texture(material.diffuse, TexCoords));
@@ -130,7 +121,7 @@ vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection){
 	float theta = dot(lightDir, normalize(-light.Ldirection));
 	
 	if(theta > light.LouterCutOff){
-	 // Ambient
+	// Ambient
 		vec3 ambient = light.Lambient* vec3(texture(material.diffuse, TexCoords));	
 	
 	// Diffuse 
@@ -144,7 +135,7 @@ vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection){
 		float spec = pow(max(dot(viewDirection, reflectDir), 0.0), material.shininess);
 		vec3 specular = light.Lspecular * spec * vec3(texture(material.specular, TexCoords));  
 		
-	//Distance
+	// Distance
 		
 		float epsilon = light.LcutOff-light.LouterCutOff;
 		float intensity =clamp((theta-light.LouterCutOff)/epsilon,0,1);

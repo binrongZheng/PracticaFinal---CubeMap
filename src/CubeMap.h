@@ -18,9 +18,10 @@ public:
 	~CubeMap();
 	GLuint loadCubemap(vector <const GLchar*> face);
 	void draw(Shader *shad);
+	vector <const GLchar*> face1, face2;
 
 private:
-	vector <const GLchar*> face1,face2;
+	
 	GLuint textureDay,textureNight;
 	GLuint VBO, VAO;
 };

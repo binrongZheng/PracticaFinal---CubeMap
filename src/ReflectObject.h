@@ -1,11 +1,8 @@
-#pragma once
-#include <GL\glew.h>
-#include<glm.hpp>
 #include <gtc\matrix_transform.hpp>
 using namespace glm;
 #include "myShader.h"
 
-class Object {
+class ReflectObject {
 
 public:
 	mat4 Model;
@@ -14,12 +11,12 @@ public:
 		cube = 0,
 	};
 
-	Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef);
-	~Object();
+	ReflectObject(vec3 scale, vec3 rotation, vec3 position, FigureType typef, GLuint textureDay, GLuint textureNight);
+	~ReflectObject();
 
-	void Draw();
+	void Draw(Shader *shad);
 	void Move(vec3 translation);
-	void Rotate(GLfloat rotaX,GLfloat rotaY);
+	void Rotate(GLfloat rotaX, GLfloat rotaY);
 	void Scale(vec3 scal);
 	void Delete();
 	mat4 GetModelMatrix();
@@ -32,5 +29,6 @@ private:
 	vec3 rotation;
 	GLfloat angleX;
 	GLfloat angleY;
+	GLuint day, night;
 };
 

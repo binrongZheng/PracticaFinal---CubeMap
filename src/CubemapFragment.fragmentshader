@@ -9,5 +9,4 @@ uniform float Valor;
 void main()
 {
     color = mix(texture(day, TexCoords),texture(night, TexCoords),Valor);
-//	color=texture(day,TexCoords); 
 }
