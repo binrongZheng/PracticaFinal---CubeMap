@@ -23,6 +23,8 @@ using namespace glm;
 using namespace std;
 const GLint WIDTH = 1000, HEIGHT = 1000;
 bool WIREFRAME = false;
+bool Reflect = false;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
 vec3 movement;
@@ -158,6 +160,25 @@ int main() {
 		glDepthMask(GL_TRUE);
 			
 //PINTAR BARCO//
+		if (Reflect == true) {
+			ReflectShader.USE();
+			view = myCamera.LookAt();
+			viewLoc = glGetUniformLocation(ReflectShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(ReflectShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+			model = translate(model, BoatPos);
+			glUniformMatrix4fv(glGetUniformLocation(ReflectShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+			glUniform3f(glGetUniformLocation(ReflectShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
+			variableShader = glGetUniformLocation(ReflectShader.Program, "Valor");
+			glUniform1f(variableShader, mixValor);
+
+			BoatModel.Draw(ReflectShader, GL_FILL);
+		}
+		else {
 		objShader.USE();
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
@@ -170,10 +191,11 @@ int main() {
 		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		
 		BoatModel.Draw(objShader, GL_FILL);
-		
-//REFLECT
+		}
+//REFLECT Y TEXTURE
+	if(Reflect==true){
 	ReflectShader.USE();
-
+	
 	view = myCamera.LookAt();
 	
 	model = glm::translate(model, reflectCub.GetPosition());
@@ -193,7 +215,8 @@ int main() {
 
 	//pintar el VAO
 	reflectCub.Draw(&ReflectShader);
-
+	}
+	else {
 //DIRECCIONAL//
 		generalLight.USE();
 		material.SetShininess(&generalLight);
@@ -236,7 +259,7 @@ int main() {
 
 		//pintar el VAO
 		cubA.Draw();
-
+	}
 ////////////////////////////////////////////////LightsCub///////////////////////////////////////////////////////
 		ReceiveShader.USE();
 
@@ -304,12 +327,13 @@ int main() {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+	//canviar reflect y textures
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+		if (Reflect == true) 
+			Reflect = false;
+		else Reflect = true;
+	}
 	
-	//canviar texturas
-	if (key == GLFW_KEY_KP_ADD && mixValor + 0.02 <= 1)
-		mixValor += 0.02;
-	if (key == GLFW_KEY_KP_SUBTRACT && mixValor - 0.02 >= 0)
-		mixValor -= 0.02;
 	//rotar cubo
 	if (key == GLFW_KEY_LEFT)		radiansX -= 0.5;
 	if (key == GLFW_KEY_RIGHT)		radiansX += 0.5;
