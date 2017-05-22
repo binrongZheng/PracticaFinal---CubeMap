@@ -34,7 +34,7 @@ public:
 
 	Mesh(vector<Vertex>, vector<GLuint>, vector<Texture>);
 	void Draw(Shader, GLint);
-
+	void Update(float* vertexArray);
 private:
 	GLuint VAO, VBO, EBO;
 	void setupMesh();

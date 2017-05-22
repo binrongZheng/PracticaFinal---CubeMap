@@ -15,7 +15,7 @@ void Mesh::setupMesh(){
 	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO); {
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);		
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -34,8 +34,17 @@ void Mesh::setupMesh(){
 	}glBindVertexArray(0);
 }
 
-void Mesh::Draw(Shader MeshShader, GLint DrawMode) {
+void Mesh::Update(float* vertexArray) {
+	//Modify vertices
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	float* buff = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+	buff[1] = 5;
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
 
+void Mesh::Draw(Shader MeshShader, GLint DrawMode) {
+	
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
 	for (GLuint i = 0; i < textures.size(); i++)
@@ -54,7 +63,7 @@ void Mesh::Draw(Shader MeshShader, GLint DrawMode) {
 	}
 /////////////////SHINIENES//////////////
 	glUniform1f(glGetUniformLocation(MeshShader.Program, "material.shininess"), 16.0f);
-	
+
 	// Draw mesh
 	glBindVertexArray(VAO);
 	glPolygonMode(GL_FRONT_AND_BACK, DrawMode);

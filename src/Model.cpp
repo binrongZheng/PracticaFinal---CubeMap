@@ -8,9 +8,16 @@ Model::Model(GLchar* path){
 	loadModel(path);
 }
 
+void Model::Update(float* vertex_data) {
+	for (GLuint i = 0; i < meshes.size(); i++) {
+		meshes[i].Update(vertex_data);
+	}
+}
+
 void Model::Draw(Shader shader, GLint drawMode) {
-	for (GLuint i = 0; i < meshes.size(); i++)
+	for (GLuint i = 0; i < meshes.size(); i++) {
 		meshes[i].Draw(shader, drawMode);
+	}
 }
 
 void Model::loadModel(string path) {
@@ -44,7 +51,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
-	vector<Vertex> vertices;
+	
 	vector<GLuint> indices;
 	vector<Texture> textures;
 
@@ -86,7 +93,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
-
 	return Mesh(vertices, indices, textures);
 }
 
@@ -124,4 +130,8 @@ GLint Model::TextureFromFile(const char* path, string directory){
 	glBindTexture(GL_TEXTURE_2D, 0);
 	SOIL_free_image_data(image);
 	return textureID;
+}
+
+vector <Vertex> Model::GetVertexArray() {
+	return vertices;
 }
