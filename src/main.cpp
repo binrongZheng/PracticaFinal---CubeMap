@@ -204,11 +204,18 @@ int main() {
 			projectionLoc = glGetUniformLocation(RefractShader.Program, "projection");
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 
-		model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
-		model = translate(model, BoatPos);
-		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		
-		BoatModel.Draw(objShader, GL_FILL);
+			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+			model = translate(model, BoatPos);
+			glUniformMatrix4fv(glGetUniformLocation(RefractShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+			
+			glUniform3f(glGetUniformLocation(RefractShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
+			variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
+			glUniform1f(variableShader, mixValor);
+
+			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
+			glUniform1f(Ratio, ratioRefract);
+
+			BoatModel.Draw(objShader, GL_FILL);
 		}
 //Pintar mar
 		objShader.USE();
@@ -224,22 +231,7 @@ int main() {
 		float prova[2] = { .5, .3 };
 		WaterModel.Update(prova);
 		WaterModel.Draw(objShader, GL_FILL);
-//REFLECT Y TEXTURE
-	if(Reflect==true){
-	ReflectShader.USE();
-	
-	view = myCamera.LookAt();
-	
-	model = glm::translate(model, reflectCub.GetPosition());
-	model = reflectCub.GetModelMatrix();
-	reflectCub.Rotate(radiansX, radiansY);
-	reflectCub.Move(movement);
 
-			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
-			glUniform1f(Ratio, ratioRefract);
-
-			BoatModel.Draw(RefractShader, GL_FILL);
-		}
 
 //REFLECT Y TEXTURE
 	if (Mode == 0) {
