@@ -24,6 +24,8 @@ using namespace std;
 const GLint WIDTH = 1000, HEIGHT = 1000;
 bool WIREFRAME = false;
 int Mode = 0;
+int ModeRefract= 0;
+float ratioRefract = 1.33f;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
@@ -209,6 +211,9 @@ int main() {
 			variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
 			glUniform1f(variableShader, mixValor);
 
+			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
+			glUniform1f(Ratio, ratioRefract);
+
 			BoatModel.Draw(RefractShader, GL_FILL);
 		}
 
@@ -299,6 +304,8 @@ int main() {
 		glUniform3f(glGetUniformLocation(RefractShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
 		variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
 		glUniform1f(variableShader, mixValor);
+		GLuint Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
+		glUniform1f(Ratio, ratioRefract);
 
 		//pintar el VAO
 		reflectCub.Draw(&RefractShader);
@@ -374,9 +381,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
 		Mode += 1;
 		Mode = Mode%3;
-		cout << Mode << endl;
 	}
-	
+	if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+		ModeRefract += 1;
+		ModeRefract = ModeRefract % 4;
+		switch (ModeRefract)
+		{
+		//Water
+		case 0:
+			ratioRefract = 1.33f;
+			break;
+		//Ice
+		case 1:
+			ratioRefract = 1.309f;
+			break;
+		//Glass
+		case 2:
+			ratioRefract = 1.52f;
+			break;
+		//Diamond
+		case 3:
+			ratioRefract = 2.42f;
+			break;
+		default:
+			break;
+		}
+	}
 	//rotar cubo
 	if (key == GLFW_KEY_LEFT)		radiansX -= 0.5;
 	if (key == GLFW_KEY_RIGHT)		radiansX += 0.5;

@@ -9,10 +9,10 @@ uniform samplerCube day;
 uniform samplerCube night;
 
 uniform float Valor;
-
+uniform float Ratio;
 void main()
 {
-	float ratio =1.00/1.52;
+	float ratio =1.00/Ratio;
 	vec3 I = normalize(Position-viewPos);
 	vec3 R = refract(I,normalize(Normal),ratio);
 	
