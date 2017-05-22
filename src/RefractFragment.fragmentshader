@@ -1,0 +1,24 @@
+#version 330 core
+in vec3 Normal;
+in vec3 Position;
+
+out vec4 color;
+
+uniform vec3 viewPos;
+uniform samplerCube day;
+uniform samplerCube night;
+
+uniform float Valor;
+uniform float Ratio;
+void main()
+{
+	float ratio =1.00/Ratio;
+	vec3 I = normalize(Position-viewPos);
+	vec3 R = refract(I,normalize(Normal),ratio);
+	
+	vec4 tex1 = texture(day, R);
+	vec4 tex2 = texture(night, R);
+	
+	color = mix(tex1, tex2, Valor);
+
+}
