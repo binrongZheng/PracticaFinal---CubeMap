@@ -262,7 +262,7 @@ int main() {
 			//pintar el VAO
 			cubA.Draw();
 		}
-	if(Mode==1){
+	if (Mode==1){
 	ReflectShader.USE();
 	
 	view = myCamera.LookAt();
@@ -388,6 +388,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		switch (ModeRefract)
 		{
 		//Water
+
 		case 0:
 			ratioRefract = 1.33f;
 			break;
