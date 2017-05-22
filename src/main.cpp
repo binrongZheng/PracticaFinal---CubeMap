@@ -96,6 +96,7 @@ int main() {
 	Shader RefractShader("./src/RefractVertex.vertexshader", "./src/RefractFragment.fragmentshader");
 
 	Model BoatModel("./src/boat/boat.obj");
+	Model WaterModel("./src/Water2/water2.obj");
 	
 	CubeMap skybox( "./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
 				    "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
@@ -206,7 +207,7 @@ int main() {
 			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
 			model = translate(model, BoatPos);
 			glUniformMatrix4fv(glGetUniformLocation(RefractShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
+			
 			glUniform3f(glGetUniformLocation(RefractShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
 			variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
 			glUniform1f(variableShader, mixValor);
@@ -214,8 +215,23 @@ int main() {
 			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
 			glUniform1f(Ratio, ratioRefract);
 
-			BoatModel.Draw(RefractShader, GL_FILL);
+			BoatModel.Draw(objShader, GL_FILL);
 		}
+//Pintar mar
+		objShader.USE();
+		view = myCamera.LookAt();
+		viewLoc = glGetUniformLocation(objShader.Program, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+		model = mat4(1.0);
+		model = scale(model, glm::vec3(.1f, .1f, .1f));
+		model = translate(model, vec3 (15,-10,0));
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		float prova[2] = { .5, .3 };
+		WaterModel.Update(prova);
+		WaterModel.Draw(objShader, GL_FILL);
+
 
 //REFLECT Y TEXTURE
 	if (Mode == 0) {

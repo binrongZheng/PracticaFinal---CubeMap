@@ -11,8 +11,10 @@ public:
 	Model();
 	Model(GLchar*);
 	void Draw(Shader, GLint);
-
+	void Update(float* aray_data);
+	vector <Vertex> GetVertexArray();
 private:
+	vector<Vertex> vertices;
 	vector<Mesh> meshes;
 	string directory;
 	vector<Texture> textures_loaded;
