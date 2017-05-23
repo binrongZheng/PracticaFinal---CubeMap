@@ -42,7 +42,7 @@ private:
 
 public:
 	vec3 cameraFront;
-	vec3 cameraPos;
+	vec3 cameraPos;	
 	Camera(vec3 position, vec3 direction, GLfloat sensitivity, GLfloat fov);
 	void DoMovement(GLFWwindow * window);
 	void MouseMove(GLFWwindow* window, double xpos, double ypos);

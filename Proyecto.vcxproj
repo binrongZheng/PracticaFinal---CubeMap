@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\camara.cpp" />
+    <ClCompile Include="src\2dTexture.cpp" />
     <ClCompile Include="src\CubeMap.cpp" />
     <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camara.h" />
+    <ClInclude Include="src\2dTexture.h" />
     <ClInclude Include="src\CubeMap.h" />
     <ClInclude Include="src\Light.h" />
     <ClInclude Include="src\material.h" />
@@ -112,7 +114,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\include\soil\src;.\Common;.\include\glm;.\include\glfw\include;.\include\glew\include;.\include\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\include\soil\src;.\Common;.\include\glm;.\include\glfw\include;.\include\glew\include;.\include\assimp\include;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

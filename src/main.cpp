@@ -12,13 +12,14 @@
 #include "Light.h"
 #include "CubeMap.h"
 #include "Model.h"
+#include "2dTexture.h"
 //para textura
 #include <SOIL.h>
 //para vector
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
-//midmaping
+
 using namespace glm;
 using namespace std;
 const GLint WIDTH = 1000, HEIGHT = 1000;
@@ -35,6 +36,8 @@ GLfloat radiansX,radiansY;
 GLfloat mixValor=0;
 GLfloat radX = 0;
 GLfloat radY = 0;
+
+GLchar *path = "./src/icon/water.png";
 
 Camera myCamera({ 0,0,3 }, { 0,0,-1 }, 0.05, 45);
 
@@ -94,6 +97,7 @@ int main() {
 	Shader CubemapShader("./src/CubemapVertex.vertexshader", "./src/CubemapFragment.fragmentshader");
 	Shader ReflectShader("./src/ReflectVertex.vertexshader", "./src/ReflectFragment.fragmentshader");
 	Shader RefractShader("./src/RefractVertex.vertexshader", "./src/RefractFragment.fragmentshader");
+	Shader TextShader("./src/textureVertex.vertexshader", "./src/textureFragment.fragmentshader");
 
 	Model BoatModel("./src/boat/boat.obj");
 	Model WaterModel("./src/Water2/water2.obj");
@@ -113,6 +117,11 @@ int main() {
 	Object cubD({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 3.f,0.3f,0.0f }, Object::cube);
 	Object cubE({ 0.1,0.1,0.1 }, { 0.f,0.f,0.0f }, { 4.5f,0.3f,0.0f }, Object::cube);
 	
+	TextureIcon water("./src/icon/water.png", { 0.1, 0.1, 0.1 }, { 0.f,0.f,0.0f }, { 0.f,-10.f,0.0f });
+	TextureIcon glass("./src/icon/glass.png", { 0.1, 0.1, 0.1 }, { 0.f,0.f,0.0f }, { 0.f,-10.f,0.0f });
+	TextureIcon ice("./src/icon/ice.png", { 0.1, 0.1, 0.1 }, { 0.f,0.f,0.0f }, { 0.f,-10.f,0.0f });
+	TextureIcon diamond("./src/icon/diamond.png", { 0.1, 0.1, 0.1 }, { 0.f,0.f,0.0f }, { 0.f,-10.f,0.0f });
+
 	GLuint Day = skybox.loadCubemap(skybox.face1);
 	GLuint Night = skybox.loadCubemap(skybox.face2);
 
@@ -162,7 +171,7 @@ int main() {
 		//pintar skybox
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
-			
+
 //PINTAR BARCO//
 		if (Mode == 0) {
 			objShader.USE();
@@ -302,6 +311,73 @@ int main() {
 	reflectCub.Draw(&ReflectShader);
 	}
 	if (Mode == 2) {
+		//TEXTURE icon
+		glass.ActiveTexture(&TextShader);
+		TextShader.USE();
+		view = myCamera.LookAt();
+		if (ModeRefract == 1) {
+			viewLoc = glGetUniformLocation(TextShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = glass.GetModelMatrix();
+
+			glass.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
+			glass.Rotate(0, 0);
+			modelLoc = glGetUniformLocation(TextShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			glass.Draw();
+		}
+		water.ActiveTexture(&TextShader);
+		if (ModeRefract == 0) {
+			viewLoc = glGetUniformLocation(TextShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = water.GetModelMatrix();
+
+			water.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
+			water.Rotate(0, 0);
+			modelLoc = glGetUniformLocation(TextShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			water.Draw();
+		}
+		ice.ActiveTexture(&TextShader);
+		if (ModeRefract == 2) {
+			viewLoc = glGetUniformLocation(TextShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = ice.GetModelMatrix();
+
+			ice.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
+			ice.Rotate(0, 0);
+			modelLoc = glGetUniformLocation(TextShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			ice.Draw();
+		}
+		diamond.ActiveTexture(&TextShader);
+		if (ModeRefract == 3) {
+			viewLoc = glGetUniformLocation(TextShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = diamond.GetModelMatrix();
+
+			diamond.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
+			diamond.Rotate(0, 0);
+			modelLoc = glGetUniformLocation(TextShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			diamond.Draw();
+		}
 		RefractShader.USE();
 
 		view = myCamera.LookAt();
@@ -371,7 +447,7 @@ int main() {
 		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		cubE.Draw();
-
+		
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
@@ -382,6 +458,8 @@ int main() {
 	cubD.Delete();
 	cubE.Delete();
 	
+	glass.~glass();
+	water.~water();
 	reflectCub.Delete();
 
 	material.~Material();
@@ -404,17 +482,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		switch (ModeRefract)
 		{
 		//Water
-
 		case 0:
-			ratioRefract = 1.33f;
+			ratioRefract = 1.33f;	
 			break;
 		//Ice
 		case 1:
-			ratioRefract = 1.309f;
+			ratioRefract = 1.309f;			
 			break;
 		//Glass
 		case 2:
-			ratioRefract = 1.52f;
+			ratioRefract = 1.52f;		
 			break;
 		//Diamond
 		case 3:
