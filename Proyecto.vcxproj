@@ -22,6 +22,7 @@
     <ClCompile Include="src\camara.cpp" />
     <ClCompile Include="src\2dTexture.cpp" />
     <ClCompile Include="src\CubeMap.cpp" />
+    <ClCompile Include="src\GeraldWaves.cpp" />
     <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\material.cpp" />
@@ -35,6 +36,7 @@
     <ClInclude Include="src\camara.h" />
     <ClInclude Include="src\2dTexture.h" />
     <ClInclude Include="src\CubeMap.h" />
+    <ClInclude Include="src\GeraldWaves.h" />
     <ClInclude Include="src\Light.h" />
     <ClInclude Include="src\material.h" />
     <ClInclude Include="src\Mesh.h" />

@@ -78,6 +78,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		}
 		vertex.TexCoords = vec;
 		vertices.push_back(vertex);
+		
 	}
 	// Process indices
 	for (GLuint i = 0; i < mesh->mNumFaces; i++) {
