@@ -5,7 +5,7 @@
 class Sea {
 public:
 	Sea(vector <Vertex> data);
-	vector<vec3> Update();
+	vector<vec3> Update(GLfloat dt);
 private:
 	vector <vec3> positions;
 	vector <vec3> inicalPositions;

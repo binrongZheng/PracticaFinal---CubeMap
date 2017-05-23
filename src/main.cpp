@@ -38,7 +38,9 @@ GLfloat mixValor=0;
 GLfloat radX = 0;
 GLfloat radY = 0;
 
-GLchar *path = "./src/icon/water.png";
+
+GLfloat Deltatime;
+GLfloat Lastframe;
 
 Camera myCamera({ 0,0,3 }, { 0,0,-1 }, 0.05, 45);
 
@@ -142,28 +144,28 @@ int main() {
 	{
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
-				
+
 		//Establecer el color de fondo
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Framebuffer
 
 		//establecer el shader
-		
-		GLint lightPosLoc, viewPosLoc,lightDirPos;
+
+		GLint lightPosLoc, viewPosLoc, lightDirPos;
 		mat4 proj;		mat4 view;		mat4 model;
 		GLint modelLoc, viewLoc, projectionLoc;
 
 		proj = perspective(radians(myCamera.GetFOV()), (float)WIDTH / (float)HEIGHT, 0.1f, 100.f);
 		myCamera.DoMovement(window);
 
-//SKYBOX//
+		//SKYBOX//
 		glDepthMask(GL_FALSE);
 		CubemapShader.USE();
-		
-		mixValor = (sin(glfwGetTime()/2) / 2) + 0.5;
 
-		view = mat4(mat3 (myCamera.LookAt()));
+		mixValor = (sin(glfwGetTime() / 2) / 2) + 0.5;
+
+		view = mat4(mat3(myCamera.LookAt()));
 		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		projectionLoc = glGetUniformLocation(CubemapShader.Program, "projection");
@@ -174,7 +176,7 @@ int main() {
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
 
-//PINTAR BARCO//
+		//PINTAR BARCO//
 		if (Mode == 0) {
 			objShader.USE();
 			view = myCamera.LookAt();
@@ -218,7 +220,7 @@ int main() {
 			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
 			model = translate(model, BoatPos);
 			glUniformMatrix4fv(glGetUniformLocation(RefractShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-			
+
 			glUniform3f(glGetUniformLocation(RefractShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
 			variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
 			glUniform1f(variableShader, mixValor);
@@ -226,20 +228,25 @@ int main() {
 			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
 			glUniform1f(Ratio, ratioRefract);
 
-			BoatModel.Draw(objShader, GL_FILL);
+			BoatModel.Draw(RefractShader, GL_FILL);
 		}
-//Pintar mar
-		vector<vec3> temp = mar.Update();
-		float vertexData[1698*3];
-		for (int i = 0; i < temp.size(); i++) {
-			vertexData[i * 3] = temp[i].x;
-			vertexData[(i * 3) + 1] = temp[i].y;
-			vertexData[(i * 3) + 2] = temp[i].z;
-		}
-		WaterModel.Update(vertexData);
+		//Pintar mar
+		float vertexData[1176 * 3];
+		GLfloat currentFrame = glfwGetTime();
+		Deltatime = currentFrame - Lastframe;
+		Lastframe = currentFrame;
+		for (int i = 0; i < 10; i++){
+			vector<vec3> temp = mar.Update(Deltatime / 10);
+			for (int i = 0; i < temp.size(); i++) {
+				vertexData[i * 3] = temp[i].x;
+				vertexData[(i * 3) + 1] = temp[i].y;
+				vertexData[(i * 3) + 2] = temp[i].z;
+			}
+			WaterModel.Update(vertexData);
+		}	
 		
-
 		objShader.USE();
+
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
@@ -247,10 +254,11 @@ int main() {
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 		
 		model = mat4(1.0);
-		model = scale(model, glm::vec3(.1f, .1f, .1f));
-		model = translate(model, vec3 (0,-15,-50));
-		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));	
+		model = translate(model, vec3(0, -1.5, 1));
+		model = scale(model, glm::vec3(1.f, .5f, 1.f));		
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		
+
 		WaterModel.Draw(objShader, GL_FILL);
 
 
