@@ -221,7 +221,7 @@ int main() {
 			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
 			glUniform1f(Ratio, ratioRefract);
 
-			BoatModel.Draw(objShader, GL_FILL);
+			BoatModel.Draw(RefractShader, GL_FILL);
 		}
 		//Pintar mar
 		float vertexData[1176 * 3];
@@ -236,9 +236,10 @@ int main() {
 				vertexData[(i * 3) + 2] = temp[i].z;
 			}
 			WaterModel.Update(vertexData);
-		}		
-
+		}	
+		
 		objShader.USE();
+
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
@@ -246,10 +247,11 @@ int main() {
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 		
 		model = mat4(1.0);
-		model = scale(model, glm::vec3(.5f, .5f, .5f));
-		model = translate(model, vec3 (0,0,-50));
-		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));	
+		model = translate(model, vec3(0, -1.5, 1));
+		model = scale(model, glm::vec3(1.f, .5f, 1.f));		
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		
+
 		WaterModel.Draw(objShader, GL_FILL);
 
 
