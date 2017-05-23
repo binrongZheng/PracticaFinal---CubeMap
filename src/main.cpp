@@ -12,6 +12,7 @@
 #include "Light.h"
 #include "CubeMap.h"
 #include "Model.h"
+#include "GeraldWaves.h"
 //para textura
 #include <SOIL.h>
 //para vector
@@ -96,7 +97,7 @@ int main() {
 	Shader RefractShader("./src/RefractVertex.vertexshader", "./src/RefractFragment.fragmentshader");
 
 	Model BoatModel("./src/boat/boat.obj");
-	Model WaterModel("./src/Water2/water2.obj");
+	Model WaterModel("./src/Water/water.obj");
 	
 	CubeMap skybox( "./src/skyboxes/day/right.jpg", "./src/skyboxes/day/left.jpg",
 				    "./src/skyboxes/day/top.jpg", "./src/skyboxes/day/bottom.jpg",
@@ -124,6 +125,7 @@ int main() {
 	Light LFocal1({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z }, { 0.f, -1.f, 0.f, }, { 0.2f, 0.0f, 0.0f }, { 0.5f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Light::SPOT, 0);
 	Light LFocal2({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z }, { 1.f, 0.0f, 0.f, }, { 0.2f, 0.07f, 0.0f }, { 0.5f, 0.170f, 0.0f }, { 0.9f, 0.30f, 0.0f }, Light::SPOT, 1);
 
+	Sea mar(WaterModel.GetVertexArray());
 
 	material.SetMaterial(&generalLight);
 
@@ -218,18 +220,28 @@ int main() {
 			BoatModel.Draw(objShader, GL_FILL);
 		}
 //Pintar mar
+		vector<vec3> temp = mar.Update();
+		float vertexData[1698*3];
+		for (int i = 0; i < temp.size(); i++) {
+			vertexData[i * 3] = temp[i].x;
+			vertexData[(i * 3) + 1] = temp[i].y;
+			vertexData[(i * 3) + 2] = temp[i].z;
+		}
+		WaterModel.Update(vertexData);
+		
+
 		objShader.USE();
 		view = myCamera.LookAt();
 		viewLoc = glGetUniformLocation(objShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+		
 		model = mat4(1.0);
 		model = scale(model, glm::vec3(.1f, .1f, .1f));
-		model = translate(model, vec3 (15,-10,0));
-		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		float prova[2] = { .5, .3 };
-		WaterModel.Update(prova);
+		model = translate(model, vec3 (0,-15,-50));
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));	
+		
 		WaterModel.Draw(objShader, GL_FILL);
 
 

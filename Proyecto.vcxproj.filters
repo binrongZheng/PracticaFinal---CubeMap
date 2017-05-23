@@ -45,6 +45,9 @@
     <ClCompile Include="src\ReflectObject.cpp">
       <Filter>Archivos de recursos</Filter>
     </ClCompile>
+    <ClCompile Include="src\GeraldWaves.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\myShader.h">
@@ -72,6 +75,9 @@
       <Filter>Archivos de recursos</Filter>
     </ClInclude>
     <ClInclude Include="src\ReflectObject.h">
+      <Filter>Archivos de recursos</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GeraldWaves.h">
       <Filter>Archivos de recursos</Filter>
     </ClInclude>
   </ItemGroup>
