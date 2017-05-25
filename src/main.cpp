@@ -32,7 +32,7 @@ float ratioRefract = 1.33f;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
 vec3 movement;
-vec3 BoatPos = { 0.0f, -6.0f, -50.f };
+vec3 BoatPos = { 0.0f, -7.50f, -50.f };
 GLfloat radiansX,radiansY;
 GLfloat mixValor=0;
 GLfloat Time = 0;
@@ -41,6 +41,7 @@ GLfloat radY = 0;
 
 bool hide = false;
 bool play = true;
+
 Camera myCamera({ 0,0,3 }, { 0,0,-1 }, 0.05, 45);
 
 //Per MAR
@@ -215,6 +216,7 @@ int main() {
 			glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 			WaterModel.Draw(objShader, GL_FILL);
+			
 		}
 		if (hide == true) {
 			//pintar MAR
@@ -264,6 +266,7 @@ int main() {
 			glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 			WaterModel.Draw(objShader, GL_FILL);
+			
 		}
 
 ///////////////////////////////////REFLECT, REFRACT Y TEXTURE (CUB & BARCO)/////////////////////////////////////
@@ -560,23 +563,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		switch (ModeRefract)
 		{
 		//Water
-		case 0:
-			ratioRefract = 1.33f;	
-			break;
+		case 0:			ratioRefract = 1.33f;				break;
 		//Ice
-		case 1:
-			ratioRefract = 1.309f;			
-			break;
+		case 1:			ratioRefract = 1.309f;				break;
 		//Glass
-		case 2:
-			ratioRefract = 1.52f;		
-			break;
+		case 2:			ratioRefract = 1.52f;				break;
 		//Diamond
-		case 3:
-			ratioRefract = 2.42f;
-			break;
-		default:
-			break;
+		case 3:			ratioRefract = 2.42f;				break;
+		default:											break;
 		}
 	}
 	//rotar cubo
