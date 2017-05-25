@@ -38,7 +38,6 @@ GLfloat mixValor=0;
 GLfloat radX = 0;
 GLfloat radY = 0;
 
-
 GLfloat Deltatime;
 GLfloat Lastframe;
 
@@ -176,60 +175,6 @@ int main() {
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
 
-		//PINTAR BARCO//
-		if (Mode == 0) {
-			objShader.USE();
-			view = myCamera.LookAt();
-			viewLoc = glGetUniformLocation(objShader.Program, "view");
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-			projectionLoc = glGetUniformLocation(objShader.Program, "projection");
-			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-
-			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
-			model = translate(model, BoatPos);
-			glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-			BoatModel.Draw(objShader, GL_FILL);
-		}
-		if (Mode == 1) {
-			ReflectShader.USE();
-			view = myCamera.LookAt();
-			viewLoc = glGetUniformLocation(ReflectShader.Program, "view");
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-			projectionLoc = glGetUniformLocation(ReflectShader.Program, "projection");
-			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-
-			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
-			model = translate(model, BoatPos);
-			glUniformMatrix4fv(glGetUniformLocation(ReflectShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-			glUniform3f(glGetUniformLocation(ReflectShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
-			variableShader = glGetUniformLocation(ReflectShader.Program, "Valor");
-			glUniform1f(variableShader, mixValor);
-
-			BoatModel.Draw(ReflectShader, GL_FILL);
-		}
-		if (Mode == 2) {
-			RefractShader.USE();
-			view = myCamera.LookAt();
-			viewLoc = glGetUniformLocation(RefractShader.Program, "view");
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-			projectionLoc = glGetUniformLocation(RefractShader.Program, "projection");
-			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-
-			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
-			model = translate(model, BoatPos);
-			glUniformMatrix4fv(glGetUniformLocation(RefractShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-			glUniform3f(glGetUniformLocation(RefractShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
-			variableShader = glGetUniformLocation(RefractShader.Program, "Valor");
-			glUniform1f(variableShader, mixValor);
-
-			GLfloat Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
-			glUniform1f(Ratio, ratioRefract);
-
-			BoatModel.Draw(RefractShader, GL_FILL);
-		}
 		//Pintar mar
 		float vertexData[1176 * 3];
 		GLfloat currentFrame = glfwGetTime();
@@ -262,7 +207,7 @@ int main() {
 		WaterModel.Draw(objShader, GL_FILL);
 
 
-//REFLECT Y TEXTURE
+//REFLECT Y TEXTURE (CUB & BARCO)
 	if (Mode == 0) {
 			//DIRECCIONAL//
 			generalLight.USE();
@@ -304,8 +249,17 @@ int main() {
 			projectionLoc = glGetUniformLocation(generalLight.Program, "projection");
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 
-			//pintar el VAO
+			//pintar BARCO
 			cubA.Draw();
+
+			model = mat3(1.0);
+
+			model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+			model = translate(model, BoatPos);
+
+			glUniformMatrix4fv(glGetUniformLocation(generalLight.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+			BoatModel.Draw(generalLight, GL_FILL);
 		}
 	if (Mode==1){
 	ReflectShader.USE();
@@ -327,8 +281,19 @@ int main() {
 	variableShader = glGetUniformLocation(ReflectShader.Program, "Valor");
 	glUniform1f(variableShader, mixValor);
 
-	//pintar el VAO
+	//pintar el BARCO
 	reflectCub.Draw(&ReflectShader);
+
+	model = mat3();
+	model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+	model = translate(model, BoatPos);
+	glUniformMatrix4fv(glGetUniformLocation(ReflectShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+	glUniform3f(glGetUniformLocation(ReflectShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
+	variableShader = glGetUniformLocation(ReflectShader.Program, "Valor");
+	glUniform1f(variableShader, mixValor);
+
+	BoatModel.Draw(ReflectShader, GL_FILL);
 	}
 	if (Mode == 2) {
 		//TEXTURE icon
@@ -398,6 +363,7 @@ int main() {
 
 			diamond.Draw();
 		}
+
 		RefractShader.USE();
 
 		view = myCamera.LookAt();
@@ -419,8 +385,14 @@ int main() {
 		GLuint Ratio = glGetUniformLocation(RefractShader.Program, "Ratio");
 		glUniform1f(Ratio, ratioRefract);
 
-		//pintar el VAO
+		//pintar el BARCO
 		reflectCub.Draw(&RefractShader);
+		model = mat3();
+		model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+		model = translate(model, BoatPos);
+		glUniformMatrix4fv(glGetUniformLocation(RefractShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		BoatModel.Draw(RefractShader, GL_FILL);
 	}
 ////////////////////////////////////////////////LightsCub///////////////////////////////////////////////////////
 		ReceiveShader.USE();
@@ -534,10 +506,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_KP_6)		movement.z += 0.05;
 	if (key == GLFW_KEY_KP_4)		movement.z -= 0.05;
 	//mover barco
-	if (key == GLFW_KEY_I) 		BoatPos.z -= 0.05;	
-	if (key == GLFW_KEY_K) 		BoatPos.z += 0.05;	
-	if (key == GLFW_KEY_J) 		BoatPos.x -= 0.05;	
-	if (key == GLFW_KEY_L) 		BoatPos.x += 0.05;
+	if (key == GLFW_KEY_I) 		BoatPos.z += 0.5;	
+	if (key == GLFW_KEY_K) 		BoatPos.z -= 0.5;	
+	if (key == GLFW_KEY_J) 		BoatPos.x -= 0.5;	
+	if (key == GLFW_KEY_L) 		BoatPos.x += 0.5;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
