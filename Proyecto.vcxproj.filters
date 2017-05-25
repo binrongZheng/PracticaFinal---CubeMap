@@ -80,5 +80,11 @@
     <ClInclude Include="src\ReflectObject.h">
       <Filter>Archivos de recursos</Filter>
     </ClInclude>
+    <ClInclude Include="src\2dTexture.h">
+      <Filter>Archivos de recursos</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GeraldWaves.h">
+      <Filter>Archivos de recursos</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

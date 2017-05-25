@@ -32,23 +32,28 @@ float ratioRefract = 1.33f;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 vec3 mov, rot, scal;
 vec3 movement;
-vec3 BoatPos = { 0.0f, -10.0f, -50.f };
+vec3 BoatPos = { 0.0f, -6.0f, -50.f };
 GLfloat radiansX,radiansY;
 GLfloat mixValor=0;
+GLfloat Time = 0;
 GLfloat radX = 0;
 GLfloat radY = 0;
+
+bool hide = false;
+bool play = true;
+Camera myCamera({ 0,0,3 }, { 0,0,-1 }, 0.05, 45);
+
+//Per MAR
+float vertexData[1176 * 3];
 
 GLfloat Deltatime;
 GLfloat Lastframe;
 
-Camera myCamera({ 0,0,3 }, { 0,0,-1 }, 0.05, 45);
-
 void MouseScroll(GLFWwindow* window, double xScroll, double yScroll) {
 	myCamera.MouseScroll(window, xScroll, yScroll);
 };
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
+void deleteFunction(Object objA, Object objB, Object objC, Object objD, Object objE, ReflectObject refcub, TextureIcon gla, TextureIcon wat, TextureIcon ice, TextureIcon diam, Material mat, CubeMap sky);
 int main() {
 	//initGLFW
 	if (!glfwInit())
@@ -147,11 +152,13 @@ int main() {
 		//Establecer el color de fondo
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//Framebuffer
-
+		//time
+		GLfloat currentFrame = glfwGetTime();
+		Deltatime = currentFrame - Lastframe;
+		Lastframe = currentFrame;
 		//establecer el shader
 
-		GLint lightPosLoc, viewPosLoc, lightDirPos;
+		GLint lightPosLoc, viewPosLoc, lightDirPos, lightColorLoc;
 		mat4 proj;		mat4 view;		mat4 model;
 		GLint modelLoc, viewLoc, projectionLoc;
 
@@ -161,8 +168,11 @@ int main() {
 		//SKYBOX//
 		glDepthMask(GL_FALSE);
 		CubemapShader.USE();
-
-		mixValor = (sin(glfwGetTime() / 2) / 2) + 0.5;
+		
+		if (play == true) {
+			Time += 0.1;
+			mixValor = (sin(Time / 2) / 2) + 0.5;		
+		}
 
 		view = mat4(mat3(myCamera.LookAt()));
 		viewLoc = glGetUniformLocation(CubemapShader.Program, "view");
@@ -171,71 +181,120 @@ int main() {
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 		GLfloat variableShader = glGetUniformLocation(CubemapShader.Program, "Valor");
 		glUniform1f(variableShader, mixValor);
-		//pintar skybox
+///////////////////////////////////////////////PINTAR SKYBOX////////////////////////////////////////////////////
 		skybox.draw(&CubemapShader);
 		glDepthMask(GL_TRUE);
 
-		//Pintar mar
-		float vertexData[1176 * 3];
-		GLfloat currentFrame = glfwGetTime();
-		Deltatime = currentFrame - Lastframe;
-		Lastframe = currentFrame;
-		for (int i = 0; i < 10; i++){
-			vector<vec3> temp = mar.Update(Deltatime / 10);
-			for (int i = 0; i < temp.size(); i++) {
-				vertexData[i * 3] = temp[i].x;
-				vertexData[(i * 3) + 1] = temp[i].y;
-				vertexData[(i * 3) + 2] = temp[i].z;
+///////////////////////////////////////////////PINTAR MAR///////////////////////////////////////////////////////
+		if (hide == false) {
+			//pintar MAR
+			generalLight.USE();
+			view = myCamera.LookAt();
+
+			Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			Ldir.setIntensity(&generalLight, mixValor * 2);
+
+			viewLoc = glGetUniformLocation(generalLight.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(generalLight.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			for (int i = 0; i < 10; i++) {
+				vector<vec3> temp = mar.Update(Deltatime / 10);
+				for (int i = 0; i < temp.size(); i++) {
+					vertexData[i * 3] = temp[i].x;
+					vertexData[(i * 3) + 1] = temp[i].y;
+					vertexData[(i * 3) + 2] = temp[i].z;
+				}
+				WaterModel.Update(vertexData);
 			}
-			WaterModel.Update(vertexData);
-		}	
-		
-		objShader.USE();
 
-		view = myCamera.LookAt();
-		viewLoc = glGetUniformLocation(objShader.Program, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-		
-		model = mat4(1.0);
-		model = translate(model, vec3(0, -1.5, 1));
-		model = scale(model, glm::vec3(1.f, .5f, 1.f));		
-		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		
+			model = mat3(1.0);
+			model = translate(model, vec3(0, -1.5, 1));
+			model = scale(model, glm::vec3(1.f, .5f, 1.f));
+			glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-		WaterModel.Draw(objShader, GL_FILL);
+			WaterModel.Draw(objShader, GL_FILL);
+		}
+		if (hide == true) {
+			//pintar MAR
+			objShader.USE();
+			view = myCamera.LookAt();
 
+			//direccional
+			Ldir.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			Ldir.setIntensity(&objShader, mixValor * 2);
+			//PUNTUAL//
+			Lpoint1.SetAtt(1.0f, 0.09, 0.032);
+			Lpoint1.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			Lpoint1.SetPosition({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z });
 
-//REFLECT Y TEXTURE (CUB & BARCO)
-	if (Mode == 0) {
-			//DIRECCIONAL//
+			Lpoint2.SetAtt(1.0f, 0.09, 0.032);
+			Lpoint2.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			Lpoint2.SetPosition({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z });
+			//FOCAL//
+			LFocal1.SetAtt(1.0f, 0.09, 0.032);
+			LFocal1.SetAperture(glm::cos(glm::radians(13.5f)), glm::cos(glm::radians(15.5f)));
+			LFocal1.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			LFocal1.SetPosition({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z });
+
+			LFocal2.SetAtt(1.0f, 0.09, 0.032);
+			LFocal2.SetAperture(glm::cos(glm::radians(13.5f)), glm::cos(glm::radians(15.5f)));
+			LFocal2.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+			LFocal2.SetPosition({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z });
+
+			viewLoc = glGetUniformLocation(objShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(objShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			for (int i = 0; i < 10; i++) {
+				vector<vec3> temp = mar.Update(Deltatime / 10);
+				for (int i = 0; i < temp.size(); i++) {
+					vertexData[i * 3] = temp[i].x;
+					vertexData[(i * 3) + 1] = temp[i].y;
+					vertexData[(i * 3) + 2] = temp[i].z;
+				}
+				WaterModel.Update(vertexData);
+			}
+
+			model = mat3(1.0);
+			model = translate(model, vec3(0, -1.5, 1));
+			model = scale(model, glm::vec3(1.f, .5f, 1.f));
+			glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+			WaterModel.Draw(objShader, GL_FILL);
+		}
+
+///////////////////////////////////REFLECT, REFRACT Y TEXTURE (CUB & BARCO)/////////////////////////////////////
+	if (Mode == 0 & hide==false) {		
 			generalLight.USE();
 			material.SetShininess(&generalLight);
 			material.ActivateTextures();
 			view = myCamera.LookAt();
 
-			Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-			Ldir.setIntensity(&generalLight, mixValor * 2);
-			//PUNTUAL//
-			Lpoint1.SetAtt(1.0f, 0.09, 0.032);
-			Lpoint1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-			Lpoint1.SetPosition({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z });
+				//direccional
+				Ldir.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+				Ldir.setIntensity(&generalLight, mixValor * 2);		
+				//PUNTUAL//
+				Lpoint1.SetAtt(1.0f, 0.09, 0.032);
+				Lpoint1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+				Lpoint1.SetPosition({ cubB.GetPosition().x, cubB.GetPosition().y, cubB.GetPosition().z });
 
-			Lpoint2.SetAtt(1.0f, 0.09, 0.032);
-			Lpoint2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-			Lpoint2.SetPosition({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z });
-			//FOCAL//
-			LFocal1.SetAtt(1.0f, 0.09, 0.032);
-			LFocal1.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
-			LFocal1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-			LFocal1.SetPosition({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z });
+				Lpoint2.SetAtt(1.0f, 0.09, 0.032);
+				Lpoint2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+				Lpoint2.SetPosition({ cubD.GetPosition().x, cubD.GetPosition().y, cubD.GetPosition().z });
+				//FOCAL//
+				LFocal1.SetAtt(1.0f, 0.09, 0.032);
+				LFocal1.SetAperture(glm::cos(glm::radians(13.5f)), glm::cos(glm::radians(15.5f)));
+				LFocal1.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+				LFocal1.SetPosition({ cubC.GetPosition().x, cubC.GetPosition().y, cubC.GetPosition().z });
 
-			LFocal2.SetAtt(1.0f, 0.09, 0.032);
-			LFocal2.SetAperture(glm::cos(glm::radians(8.5f)), glm::cos(glm::radians(10.5f)));
-			LFocal2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
-			LFocal2.SetPosition({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z });
-
+				LFocal2.SetAtt(1.0f, 0.09, 0.032);
+				LFocal2.SetAperture(glm::cos(glm::radians(13.5f)), glm::cos(glm::radians(15.5f)));
+				LFocal2.SetLight(&generalLight, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+				LFocal2.SetPosition({ cubE.GetPosition().x, cubE.GetPosition().y, cubE.GetPosition().z });
+			
 			model = glm::translate(model, cubA.GetPosition());
 			model = cubA.GetModelMatrix();
 
@@ -248,7 +307,7 @@ int main() {
 			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 			projectionLoc = glGetUniformLocation(generalLight.Program, "projection");
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-
+			
 			//pintar BARCO
 			cubA.Draw();
 
@@ -260,7 +319,44 @@ int main() {
 			glUniformMatrix4fv(glGetUniformLocation(generalLight.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 			BoatModel.Draw(generalLight, GL_FILL);
+
 		}
+	//Per pintar barco i cub
+	if (Mode == 0 & hide == true) {
+		objShader.USE();
+		view = myCamera.LookAt();
+		material.SetShininess(&objShader);
+		material.ActivateTextures();
+
+		Ldir.SetLight(&objShader, { myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z });
+		Ldir.setIntensity(&objShader, mixValor * 2);
+
+		model = translate(model, cubA.GetPosition());
+		model = cubA.GetModelMatrix();
+
+		cubA.Rotate(radiansX, radiansY);
+		cubA.Move(movement);
+
+		modelLoc = glGetUniformLocation(objShader.Program, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+		viewLoc = glGetUniformLocation(objShader.Program, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+		projectionLoc = glGetUniformLocation(objShader.Program, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+		//pintar BARCO
+		cubA.Draw();
+
+		model = mat3(1.0);
+
+		model = scale(model, glm::vec3(0.1f, 0.1f, -0.1f));
+		model = translate(model, BoatPos);
+
+		glUniformMatrix4fv(glGetUniformLocation(objShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		BoatModel.Draw(objShader, GL_FILL);		
+	}
+	//REFLECT
 	if (Mode==1){
 	ReflectShader.USE();
 	
@@ -295,6 +391,7 @@ int main() {
 
 	BoatModel.Draw(ReflectShader, GL_FILL);
 	}
+	//REFRACT
 	if (Mode == 2) {
 		//TEXTURE icon
 		glass.ActiveTexture(&TextShader);
@@ -397,69 +494,58 @@ int main() {
 ////////////////////////////////////////////////LightsCub///////////////////////////////////////////////////////
 		ReceiveShader.USE();
 
-		model = glm::translate(model, cubB.GetPosition());
-		model = cubB.GetModelMatrix();
-		
-		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-		
-		GLint lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
-		glUniform3f(lightColorLoc, 0.0f, 1.0f, 0.0f);
-
 		viewLoc = glGetUniformLocation(ReceiveShader.Program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		projectionLoc = glGetUniformLocation(ReceiveShader.Program, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
 
-		//pintar el VAO
-		cubB.Draw();
-		
-		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
-		glUniform3f(lightColorLoc, 1.0f, 0.0f, 0.0f);
-		model = glm::translate(model, cubC.GetPosition());
-		model = cubC.GetModelMatrix();
-		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+		//pintar el cub
+		if (hide == false) {
+					
+			lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
+			glUniform3f(lightColorLoc, 0.0f, 1.0f, 0.0f);
+			model = glm::translate(model, cubB.GetPosition());
+			model = cubB.GetModelMatrix();
+			modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 
-		cubC.Draw();
+			cubB.Draw();
 		
-		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
-		glUniform3f(lightColorLoc, 0.0f, 0.0f, 1.0f);
-		model = glm::translate(model, cubD.GetPosition());
-		model = cubD.GetModelMatrix();
-		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+			lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
+			glUniform3f(lightColorLoc, 1.0f, 0.0f, 0.0f);
+			model = glm::translate(model, cubC.GetPosition());
+			model = cubC.GetModelMatrix();
+			modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 
-		cubD.Draw();
+			cubC.Draw();
 		
-		lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
-		glUniform3f(lightColorLoc, 0.90f, 0.30f, 0.0f);
-		model = glm::translate(model, cubE.GetPosition());
-		model = cubE.GetModelMatrix();
-		modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-		cubE.Draw();
+			lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
+			glUniform3f(lightColorLoc, 0.0f, 0.0f, 1.0f);
+			model = glm::translate(model, cubD.GetPosition());
+			model = cubD.GetModelMatrix();
+			modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			cubD.Draw();
 		
+			lightColorLoc = glGetUniformLocation(ReceiveShader.Program, "lightColor");
+			glUniform3f(lightColorLoc, 0.90f, 0.30f, 0.0f);
+			model = glm::translate(model, cubE.GetPosition());
+			model = cubE.GetModelMatrix();
+			modelLoc = glGetUniformLocation(ReceiveShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+			cubE.Draw();
+		}
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
-	// liberar la memoria de los VAO, EBO y VBO
-	cubA.Delete();
-	cubB.Delete();
-	cubC.Delete();
-	cubD.Delete();
-	cubE.Delete();
-	
-	glass.~glass();
-	water.~water();
-	reflectCub.Delete();
-
-	material.~Material();
-	skybox.~CubeMap();
-	// Terminate GLFW, clearing any resources allocated by GLFW.
+///////////////////////////////// liberar la memoria de los VAO, EBO y VBO///////////////////////////////////////
+	deleteFunction(cubA, cubB, cubC, cubD, cubE, reflectCub, glass, water,ice,diamond, material, skybox);
+////////////////////////// Terminate GLFW, clearing any resources allocated by GLFW./////////////////////////////
 	exit(EXIT_SUCCESS);
 }
-
+/////////////////////////////////////////////TECLAT///////////////////////////////////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
@@ -510,8 +596,36 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_K) 		BoatPos.z -= 0.5;	
 	if (key == GLFW_KEY_J) 		BoatPos.x -= 0.5;	
 	if (key == GLFW_KEY_L) 		BoatPos.x += 0.5;
+	//ocultar luz
+	if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+		if(hide==true)		hide = false;
+		else				hide = true;
+	}
+	//play&stop
+	if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+		if (play == true)		play = false;
+		else				play = true;
+	}
 }
-
+/////////////////////////////////////////////RATÓN////////////////////////////////////////////////////
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	myCamera.MouseMove(window, xpos, ypos);
+};
+//////////////////////////////////////////liberar memoria/////////////////////////////////////////////
+void deleteFunction(Object objA, Object objB, Object objC, Object objD, Object objE, ReflectObject refcub, TextureIcon gla, TextureIcon wat, TextureIcon ice, TextureIcon diam, Material mat,CubeMap sky) {
+	// liberar la memoria de los VAO, EBO y VBO
+	objA.Delete();
+	objB.Delete();
+	objC.Delete();
+	objD.Delete();
+	objE.Delete();
+	refcub.Delete();
+
+	gla.~gla();
+	wat.~gla();
+	ice.~ice();
+	diam.~diam();
+	
+	mat.~Material();
+	sky.~CubeMap();
 };
