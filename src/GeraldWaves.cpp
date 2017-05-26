@@ -19,7 +19,6 @@ Sea::Sea(vector <Vertex> data) {
 	phis.push_back(0.25);
 	phis.push_back(0.5);	
 	
-//	cout << positions.size() << endl;
 }
 
 vector<vec3> Sea::Update(GLfloat dt) {

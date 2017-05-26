@@ -171,7 +171,7 @@ int main() {
 		CubemapShader.USE();
 		
 		if (play == true) {
-			Time += 0.1;
+			Time += Deltatime;
 			mixValor = (sin(Time / 2) / 2) + 0.5;		
 		}
 
@@ -270,7 +270,7 @@ int main() {
 		}
 
 ///////////////////////////////////REFLECT, REFRACT Y TEXTURE (CUB & BARCO)/////////////////////////////////////
-	if (Mode == 0 & hide==false) {		
+	if (Mode == 0 & hide == false) {		
 			generalLight.USE();
 			material.SetShininess(&generalLight);
 			material.ActivateTextures();
@@ -397,24 +397,10 @@ int main() {
 	//REFRACT
 	if (Mode == 2) {
 		//TEXTURE icon
-		glass.ActiveTexture(&TextShader);
+		
 		TextShader.USE();
 		view = myCamera.LookAt();
-		if (ModeRefract == 1) {
-			viewLoc = glGetUniformLocation(TextShader.Program, "view");
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
-			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
-
-			model = glass.GetModelMatrix();
-
-			glass.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
-			glass.Rotate(0, 0);
-			modelLoc = glGetUniformLocation(TextShader.Program, "model");
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-
-			glass.Draw();
-		}
+		
 		water.ActiveTexture(&TextShader);
 		if (ModeRefract == 0) {
 			viewLoc = glGetUniformLocation(TextShader.Program, "view");
@@ -432,7 +418,7 @@ int main() {
 			water.Draw();
 		}
 		ice.ActiveTexture(&TextShader);
-		if (ModeRefract == 2) {
+		if (ModeRefract == 1) {
 			viewLoc = glGetUniformLocation(TextShader.Program, "view");
 			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
@@ -446,6 +432,22 @@ int main() {
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 
 			ice.Draw();
+		}
+		glass.ActiveTexture(&TextShader);
+		if (ModeRefract == 2) {
+			viewLoc = glGetUniformLocation(TextShader.Program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+			projectionLoc = glGetUniformLocation(TextShader.Program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(proj));
+
+			model = glass.GetModelMatrix();
+
+			glass.Move(cubA.GetPosition() + vec3(0.0, -0.25, 0.155));
+			glass.Rotate(0, 0);
+			modelLoc = glGetUniformLocation(TextShader.Program, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			glass.Draw();
 		}
 		diamond.ActiveTexture(&TextShader);
 		if (ModeRefract == 3) {
@@ -598,7 +600,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	//play&stop
 	if (key == GLFW_KEY_P && action == GLFW_PRESS) {
 		if (play == true)		play = false;
-		else				play = true;
+		else					play = true;
 	}
 }
 /////////////////////////////////////////////RATÓN////////////////////////////////////////////////////
@@ -616,7 +618,7 @@ void deleteFunction(Object objA, Object objB, Object objC, Object objD, Object o
 	refcub.Delete();
 
 	gla.~gla();
-	wat.~gla();
+	wat.~wat();
 	ice.~ice();
 	diam.~diam();
 	
